@@ -1,3 +1,3 @@
 # Snake
 
-Simple Terinal Snake in C 
+Simple Terminal Snake in C 
