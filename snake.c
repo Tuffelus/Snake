@@ -39,19 +39,19 @@ main()
 
 	while ((ch = getch()) != 'q') {
 		erase();
-		for (int i = 0; i < SIZE_X; i++) {
+		for (int i = 1; i < SIZE_X - 1; i++) {
 			mvaddch(0, i, '-');
 			mvaddch(SIZE_Y - 1, i, '-');
 		}
 
-		for (int i = 0; i < SIZE_Y; i++) {
-			mvaddch(i, 0, '|');
-			mvaddch(i, SIZE_X - 1, '|');
+		for (int i = 1; i < SIZE_Y - 1; i++) {
+			mvaddch(i, 1, '|');
+			mvaddch(i, SIZE_X - 2, '|');
 		}
-		mvaddch(0, 0, '#');
-		mvaddch(0, SIZE_X - 1, '#');
-		mvaddch(SIZE_Y - 1, SIZE_X - 1, '#');
-		mvaddch(SIZE_Y - 1, 0, '#');
+		mvaddch(0, 1, '#');
+		mvaddch(0, SIZE_X - 2, '#');
+		mvaddch(SIZE_Y - 1, SIZE_X - 2, '#');
+		mvaddch(SIZE_Y - 1, 1, '#');
 
 		if (ch == 'w' && direction != DOWN) {
 			direction = UP;
@@ -101,8 +101,8 @@ main()
 void
 reposition_food(void)
 {
-	food_x = rand() % (SIZE_X - 3) + 1;
-	food_y = rand() % (SIZE_Y - 3) + 1;
+	food_x = rand() % (SIZE_X - 4) + 1;
+	food_y = rand() % (SIZE_Y - 4) + 1;
 
 	food_x += food_x % 2;
 }
@@ -148,7 +148,7 @@ move_snake(struct snake *head, enum move_dir direction, bool append)
 		break;
 	case LEFT:
 		if ((head->pos_x -= 2) <= 1) {
-			head->pos_x = SIZE_X - 2;
+			head->pos_x = SIZE_X - 4;
 		}
 		break;
 	case UP:
