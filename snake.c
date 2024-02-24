@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include "snake.h"
 
-int max_x, max_y;
 int food_x, food_y;
 
 int
@@ -24,15 +23,14 @@ main()
 	noecho();
 	nodelay(stdscr, TRUE);
 	curs_set(0);
-	init_pair(1, COLOR_GREEN, COLOR_BLACK);
-	init_pair(2, COLOR_RED, COLOR_BLACK);
+	init_pair(1, COLOR_BLACK, COLOR_GREEN);
+	init_pair(2, COLOR_BLACK, COLOR_RED);
 
-	getmaxyx(stdscr, max_y, max_x);
 	reposition_food();
 
 	struct snake *head = malloc(sizeof(struct snake));
-	head->pos_x = (max_x / 2);
-	head->pos_y = max_y / 2;
+	head->pos_x = (SIZE_X / 2) + (SIZE_X % 2);
+	head->pos_y = (SIZE_Y / 2) + (SIZE_Y % 2);
 
 	enum move_dir direction = UNDEFINED;
 	bool has_eaten = false;
@@ -41,9 +39,19 @@ main()
 
 	while ((ch = getch()) != 'q') {
 		erase();
-		getmaxyx(stdscr, max_y, max_x);
+		for (int i = 0; i < SIZE_X; i++) {
+			mvaddch(0, i, '-');
+			mvaddch(SIZE_Y - 1, i, '-');
+		}
 
-		border(0, 0, 0, 0, 0, 0, 0, 0);
+		for (int i = 0; i < SIZE_Y; i++) {
+			mvaddch(i, 0, '|');
+			mvaddch(i, SIZE_X - 1, '|');
+		}
+		mvaddch(0, 0, '#');
+		mvaddch(0, SIZE_X - 1, '#');
+		mvaddch(SIZE_Y - 1, SIZE_X - 1, '#');
+		mvaddch(SIZE_Y - 1, 0, '#');
 
 		if (ch == 'w' && direction != DOWN) {
 			direction = UP;
@@ -75,12 +83,13 @@ main()
 		}
 		else {
 			attron(COLOR_PAIR(1));
-			mvprintw(food_y, food_x, "X");
+			mvprintw(food_y, food_x, "  ");
 			attroff(COLOR_PAIR(1));
 		}
 
 		print_snake(head);
 		refresh();
+
 		usleep(100000);
 	}
 
@@ -92,8 +101,10 @@ main()
 void
 reposition_food(void)
 {
-	food_x = rand() % (max_x - 3) + 1;
-	food_y = rand() % (max_y - 3) + 1;
+	food_x = rand() % (SIZE_X - 3) + 1;
+	food_y = rand() % (SIZE_Y - 3) + 1;
+
+	food_x += food_x % 2;
 }
 
 enum collision_type
@@ -131,22 +142,22 @@ move_snake(struct snake *head, enum move_dir direction, bool append)
 
 	switch (direction) {
 	case RIGHT:
-		if (head->pos_x++ >= max_x - 2) {
-			head->pos_x = 1;
+		if ((head->pos_x += 2) >= SIZE_X - 2) {
+			head->pos_x = 2;
 		}
 		break;
 	case LEFT:
-		if (head->pos_x-- <= 1) {
-			head->pos_x = max_x - 2;
+		if ((head->pos_x -= 2) <= 1) {
+			head->pos_x = SIZE_X - 2;
 		}
 		break;
 	case UP:
 		if (head->pos_y-- <= 1) {
-			head->pos_y = max_y - 2;
+			head->pos_y = SIZE_Y - 2;
 		}
 		break;
 	case DOWN:
-		if (head->pos_y++ >= max_y - 2) {
+		if (head->pos_y++ >= SIZE_Y - 2) {
 			head->pos_y = 1;
 		}
 		break;
@@ -187,10 +198,10 @@ void
 print_snake(struct snake *head)
 {
 	attron(COLOR_PAIR(2));
-	mvprintw(head->pos_y, head->pos_x, "@");
+	mvprintw(head->pos_y, head->pos_x, "  ");
 
 	for (struct snake *curser = head->next; curser != NULL; curser = curser->next) {
-		mvprintw(curser->pos_y, curser->pos_x, "O");
+		mvprintw(curser->pos_y, curser->pos_x, "  ");
 	}
 	attroff(COLOR_PAIR(2));
 }

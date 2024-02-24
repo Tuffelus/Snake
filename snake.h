@@ -1,3 +1,6 @@
+#define SIZE_X 40
+#define SIZE_Y 20
+
 enum move_dir {
 	UNDEFINED = -1,
 	RIGHT,
