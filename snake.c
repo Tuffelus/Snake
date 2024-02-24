@@ -16,11 +16,16 @@ main()
 	srand(time(NULL));
 
 	initscr();
+	start_color();
+	init_pair(1, COLOR_GREEN, COLOR_BLACK);
+	init_pair(2, COLOR_RED, COLOR_BLACK);
 	raw();
 	keypad(stdscr, TRUE);
 	noecho();
 	nodelay(stdscr, TRUE);
 	curs_set(0);
+	init_pair(1, COLOR_GREEN, COLOR_BLACK);
+	init_pair(2, COLOR_RED, COLOR_BLACK);
 
 	getmaxyx(stdscr, max_y, max_x);
 	reposition_food();
@@ -38,15 +43,7 @@ main()
 		erase();
 		getmaxyx(stdscr, max_y, max_x);
 
-		for (int i = 0; i < max_x; i++) {
-			mvaddch(0, i, '#');
-			mvaddch(max_y - 1, i, '#');
-		}
-
-		for (int i = 0; i < max_y; i++) {
-			mvaddch(i, 0, '#');
-			mvaddch(i, max_x - 1, '#');
-		}
+		border(0, 0, 0, 0, 0, 0, 0, 0);
 
 		if (ch == 'w' && direction != DOWN) {
 			direction = UP;
@@ -77,7 +74,9 @@ main()
 			reposition_food();
 		}
 		else {
+			attron(COLOR_PAIR(1));
 			mvprintw(food_y, food_x, "X");
+			attroff(COLOR_PAIR(1));
 		}
 
 		print_snake(head);
@@ -187,9 +186,11 @@ free_snake(struct snake *head)
 void
 print_snake(struct snake *head)
 {
+	attron(COLOR_PAIR(2));
 	mvprintw(head->pos_y, head->pos_x, "@");
 
 	for (struct snake *curser = head->next; curser != NULL; curser = curser->next) {
 		mvprintw(curser->pos_y, curser->pos_x, "O");
 	}
+	attroff(COLOR_PAIR(2));
 }

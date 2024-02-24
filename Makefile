@@ -3,7 +3,7 @@ CFLAGS = -std=c17 -g -Wall
 
 COMPONENTS = snake
 
-all: main
+all: format main
 
 main: $(COMPONENTS:=.c) $(COMPONENTS:=.h)
 	$(CC) $(CFLAGS) $(COMPONENTS:=.c) -o Snake -lncurses
