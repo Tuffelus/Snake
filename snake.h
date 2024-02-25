@@ -2,6 +2,7 @@
 #define SIZE_Y 20
 
 enum move_dir {
+	// UNDEFINED stops the snake from moving
 	UNDEFINED = -1,
 	RIGHT,
 	LEFT,

@@ -16,8 +16,6 @@ main()
 
 	initscr();
 	start_color();
-	init_pair(1, COLOR_GREEN, COLOR_BLACK);
-	init_pair(2, COLOR_RED, COLOR_BLACK);
 	raw();
 	keypad(stdscr, TRUE);
 	noecho();
@@ -25,6 +23,8 @@ main()
 	curs_set(0);
 	init_pair(1, COLOR_BLACK, COLOR_GREEN);
 	init_pair(2, COLOR_BLACK, COLOR_RED);
+
+	int score = 0;
 
 	reposition_food();
 
@@ -71,8 +71,7 @@ main()
 			has_eaten = true;
 		}
 		else if (coll == COLL_SNAKE) {
-			printf("You lost...\n");
-			break;
+			direction = UNDEFINED;
 		}
 		else {
 			has_eaten = false;
@@ -80,12 +79,15 @@ main()
 
 		if (has_eaten) {
 			reposition_food();
+			score++;
 		}
 		else {
 			attron(COLOR_PAIR(1));
 			mvprintw(food_y, food_x, "  ");
 			attroff(COLOR_PAIR(1));
 		}
+
+		mvprintw(1, SIZE_X + 3, "Score: %d", score);
 
 		print_snake(head);
 		refresh();
