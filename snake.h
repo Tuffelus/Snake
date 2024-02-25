@@ -28,3 +28,4 @@ void free_snake(struct snake *head);
 void print_snake(struct snake *head);
 void reposition_food(void);
 enum collision_type collision_detection(struct snake *head);
+void new_game();

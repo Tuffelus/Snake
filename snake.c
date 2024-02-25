@@ -25,19 +25,16 @@ main()
 	init_pair(2, COLOR_BLACK, COLOR_RED);
 
 	int score = 0;
-
-	reposition_food();
-
 	struct snake *head = malloc(sizeof(struct snake));
-	head->pos_x = (SIZE_X / 2) + (SIZE_X % 2);
-	head->pos_y = (SIZE_Y / 2) + (SIZE_Y % 2);
-
 	enum move_dir direction = UNDEFINED;
 	bool has_eaten = false;
+
+	new_game(head, &score);
 
 	int ch;
 
 	while ((ch = getch()) != 'q') {
+		bool end_game = false;
 		erase();
 		for (int i = 1; i < SIZE_X - 1; i++) {
 			mvaddch(0, i, '-');
@@ -71,7 +68,10 @@ main()
 			has_eaten = true;
 		}
 		else if (coll == COLL_SNAKE) {
-			direction = UNDEFINED;
+			mvprintw(1, SIZE_X + 1, "You lost...");
+			mvprintw(3, SIZE_X + 1, "Press anything to reset the snake");
+
+			end_game = true;
 		}
 		else {
 			has_eaten = false;
@@ -87,17 +87,37 @@ main()
 			attroff(COLOR_PAIR(1));
 		}
 
-		mvprintw(1, SIZE_X + 3, "Score: %d", score);
+		mvprintw(2, SIZE_X + 3, "Score: %d", score);
 
 		print_snake(head);
 		refresh();
 
 		usleep(100000);
+
+		if (end_game) {
+			direction = UNDEFINED;
+			nodelay(stdscr, 0);
+			if (getch() != -1) {
+				new_game(head, &score);
+			}
+			nodelay(stdscr, 1);
+		}
 	}
 
 	free_snake(head);
 	endwin();
 	return 0;
+}
+
+void
+new_game(struct snake *head, int *score)
+{
+	free_snake(head);
+	*score = 0;
+	reposition_food();
+
+	head->pos_x = (SIZE_X / 2) + (SIZE_X % 2);
+	head->pos_y = (SIZE_Y / 2) + (SIZE_Y % 2);
 }
 
 void
@@ -193,7 +213,7 @@ free_snake(struct snake *head)
 		return;
 	}
 	free_snake(head->next);
-	free(head);
+	head->next = NULL;
 }
 
 void
