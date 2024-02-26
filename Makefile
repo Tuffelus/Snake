@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -std=c17 -g -Wall
 
-COMPONENTS = snake
+COMPONENTS = snake util
 
 all: format main
 

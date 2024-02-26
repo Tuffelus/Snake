@@ -1,11 +1,6 @@
 #define _DEFAULT_SOURCE
-
-#include <ncurses.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
 #include "snake.h"
+#include "util.h"
 
 int food_x, food_y;
 
@@ -14,17 +9,16 @@ main()
 {
 	srand(time(NULL));
 
-	initscr();
-	start_color();
-	raw();
-	keypad(stdscr, TRUE);
-	noecho();
-	nodelay(stdscr, TRUE);
-	curs_set(0);
-	init_pair(1, COLOR_BLACK, COLOR_GREEN);
-	init_pair(2, COLOR_BLACK, COLOR_RED);
+	char *filename = "snake.conf";
+	init_tui();
 
 	int score = 0;
+	int highscore = 0;
+	char *highscore_str = "highscore";
+	if ((highscore = get_token_value(filename, highscore_str)) == FAILURE) {
+		add_token(filename, highscore_str, 0);
+		highscore = 0;
+	}
 	struct snake *head = malloc(sizeof(struct snake));
 	enum move_dir direction = UNDEFINED;
 	bool has_eaten = false;
@@ -36,19 +30,7 @@ main()
 	while ((ch = getch()) != 'q') {
 		bool end_game = false;
 		erase();
-		for (int i = 1; i < SIZE_X - 1; i++) {
-			mvaddch(0, i, '-');
-			mvaddch(SIZE_Y - 1, i, '-');
-		}
-
-		for (int i = 1; i < SIZE_Y - 1; i++) {
-			mvaddch(i, 1, '|');
-			mvaddch(i, SIZE_X - 2, '|');
-		}
-		mvaddch(0, 1, '#');
-		mvaddch(0, SIZE_X - 2, '#');
-		mvaddch(SIZE_Y - 1, SIZE_X - 2, '#');
-		mvaddch(SIZE_Y - 1, 1, '#');
+		print_border();
 
 		if (ch == 'w' && direction != DOWN) {
 			direction = UP;
@@ -63,18 +45,17 @@ main()
 			direction = LEFT;
 		}
 
-		int coll = move_snake(head, direction, has_eaten);
-		if (coll == COLL_FOOD) {
+		enum collision_type coll = move_snake(head, direction, has_eaten);
+		switch (coll) {
+		case COLL_FOOD:
 			has_eaten = true;
-		}
-		else if (coll == COLL_SNAKE) {
-			mvprintw(1, SIZE_X + 1, "You lost...");
-			mvprintw(3, SIZE_X + 1, "Press anything to reset the snake");
-
+			break;
+		case COLL_SNAKE:
 			end_game = true;
-		}
-		else {
+			break;
+		default:
 			has_eaten = false;
+			break;
 		}
 
 		if (has_eaten) {
@@ -88,6 +69,7 @@ main()
 		}
 
 		mvprintw(2, SIZE_X + 3, "Score: %d", score);
+		mvprintw(3, SIZE_X + 3, "(Highscore: %d)", highscore);
 
 		print_snake(head);
 		refresh();
@@ -95,7 +77,22 @@ main()
 		usleep(100000);
 
 		if (end_game) {
+			if (score > highscore) {
+				highscore = score;
+				if (write_token_value(filename, highscore_str, highscore) == FAILURE) {
+					fprintf(stderr, "ERROR: Failed writing to file\n");
+					add_token(filename, highscore_str, highscore);
+				}
+			}
+
+			char *msg = "You lost...";
+			mvprintw(SIZE_Y, SIZE_X / 2 - strlen(msg) / 2, "%s", msg);
+			msg = "Press any key to reset the snake";
+			mvprintw(SIZE_Y + 1, SIZE_X / 2 - strlen(msg) / 2, "%s", msg);
+
 			direction = UNDEFINED;
+
+			// pauses game until a key is pressed
 			nodelay(stdscr, 0);
 			if (getch() != -1) {
 				new_game(head, &score);
@@ -132,8 +129,9 @@ reposition_food(void)
 enum collision_type
 move_snake(struct snake *head, enum move_dir direction, bool append)
 {
-	if (direction == UNDEFINED)
-		return append;
+	if (direction == UNDEFINED) {
+		return COLL_NONE;
+	}
 
 	struct snake *curser = head;
 	while (curser->next != NULL) {
@@ -226,4 +224,36 @@ print_snake(struct snake *head)
 		mvprintw(curser->pos_y, curser->pos_x, "  ");
 	}
 	attroff(COLOR_PAIR(2));
+}
+
+void
+print_border(void)
+{
+	for (int i = 1; i < SIZE_X - 1; i++) {
+		mvaddch(0, i, '-');
+		mvaddch(SIZE_Y - 1, i, '-');
+	}
+
+	for (int i = 1; i < SIZE_Y - 1; i++) {
+		mvaddch(i, 1, '|');
+		mvaddch(i, SIZE_X - 2, '|');
+	}
+	mvaddch(0, 1, '#');
+	mvaddch(0, SIZE_X - 2, '#');
+	mvaddch(SIZE_Y - 1, SIZE_X - 2, '#');
+	mvaddch(SIZE_Y - 1, 1, '#');
+}
+
+void
+init_tui(void)
+{
+	initscr();
+	start_color();
+	raw();
+	keypad(stdscr, TRUE);
+	noecho();
+	nodelay(stdscr, TRUE);
+	curs_set(0);
+	init_pair(1, COLOR_BLACK, COLOR_GREEN);
+	init_pair(2, COLOR_BLACK, COLOR_RED);
 }

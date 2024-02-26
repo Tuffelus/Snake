@@ -1,3 +1,11 @@
+#include <ncurses.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+
 #define SIZE_X 40
 #define SIZE_Y 20
 
@@ -26,6 +34,8 @@ struct snake {
 enum collision_type move_snake(struct snake *head, enum move_dir direction, bool append);
 void free_snake(struct snake *head);
 void print_snake(struct snake *head);
+void print_border(void);
 void reposition_food(void);
 enum collision_type collision_detection(struct snake *head);
-void new_game();
+void new_game(struct snake *head, int *score);
+void init_tui(void);
